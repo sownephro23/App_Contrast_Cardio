@@ -1,0 +1,22 @@
+{
+  "name": "Prévention de la NIC",
+  "short_name": "Prévention NIC",
+  "description": "Application pour l'évaluation du risque et la génération de protocole pour la prévention de la Néphropathie Induite par le Contraste (NIC).",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "images/icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "images/icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

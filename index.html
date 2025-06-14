@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- PWA Meta Tags -->
+    <title>Application: Prévention de la NIC</title>
+    <meta name="description" content="Application pour l'évaluation du risque et la génération de protocole pour la prévention de la Néphropathie Induite par le Contraste (NIC).">
+    <meta name="theme-color" content="#3b82f6"/>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="images/icons/icon-192x192.png">
+
+    <!-- Styles and Fonts -->
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+<body class="text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-6xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Prévention Dynamique de la NIC</h1>
+            <p class="text-lg text-slate-600 mt-2">Évaluation du risque et génération de protocole</p>
+        </header>
+
+        <nav class="bg-white rounded-xl shadow-md p-2 mb-8 flex flex-wrap justify-center gap-2">
+            <button id="btn-tab-generateur" class="nav-btn flex-grow md:flex-grow-0 px-3 py-2 rounded-lg text-sm md:text-base font-medium text-slate-700 hover:bg-slate-200 transition-colors duration-200 active">Générateur</button>
+            <button id="nav-fiche" class="nav-btn flex-grow md:flex-grow-0 px-3 py-2 rounded-lg text-sm md:text-base font-medium text-slate-700 hover:bg-slate-200 transition-colors duration-200" disabled>Fiche de Synthèse</button>
+            <button id="btn-tab-outils" class="nav-btn flex-grow md:flex-grow-0 px-3 py-2 rounded-lg text-sm md:text-base font-medium text-slate-700 hover:bg-slate-200 transition-colors duration-200">Outils de Calcul</button>
+            <button id="btn-tab-protocoles" class="nav-btn flex-grow md:flex-grow-0 px-3 py-2 rounded-lg text-sm md:text-base font-medium text-slate-700 hover:bg-slate-200 transition-colors duration-200">Algorithme des Protocoles</button>
+            <button id="btn-tab-references" class="nav-btn flex-grow md:flex-grow-0 px-3 py-2 rounded-lg text-sm md:text-base font-medium text-slate-700 hover:bg-slate-200 transition-colors duration-200">Références</button>
+        </nav>
+
+        <main>
+            <!-- Générateur Tab -->
+            <div id="generateur" class="tab-content active">
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                    <div id="identification-section" class="mb-8 pb-6 border-b">
+                        <h2 class="step-title"><i class="fa-solid fa-user-pen icon"></i>Étape 1: Identification</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="patient-name" placeholder="Nom du patient" class="w-full p-2 border rounded-md">
+                            <input type="text" id="doctor-name" placeholder="Nom du Médecin" class="w-full p-2 border rounded-md">
+                        </div>
+                    </div>
+                    
+                    <div id="pre-intervention-section" class="mb-8 pb-6 border-b">
+                        <h2 class="step-title"><i class="fa-solid fa-clipboard-list icon"></i>Étape 2: Évaluation Pré-Intervention (Score de Mehran + Modèle 1)</h2>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div>
+                                <h3 class="font-semibold text-lg mb-3">Données Cliniques</h3>
+                                <div class="space-y-4">
+                                    <div class="p-3 bg-slate-50 rounded-lg"><label for="poids" class="block font-medium mb-1 text-sm">Poids (kg)</label><input type="number" id="poids" placeholder="70" class="w-full p-2 border"></div>
+                                    <div class="p-3 bg-slate-50 rounded-lg"><label for="creatinine" class="block font-medium mb-1 text-sm">Créatinine (mg/L)</label><input type="number" id="creatinine" step="1" placeholder="12" class="w-full p-2 border"></div>
+                                    <div class="p-3 bg-slate-50 rounded-lg"><label for="contrast" class="block font-medium mb-1 text-sm">Volume contraste prévu (mL)</label><input type="number" id="contrast" placeholder="150" class="w-full p-2 border"></div>
+                                    <div class="p-3 bg-slate-50 rounded-lg">
+                                        <label for="egfr" class="block font-medium mb-1 text-sm">Tranche de DFGe</label>
+                                        <div class="flex items-center gap-2">
+                                            <select id="egfr" class="w-full p-2 border"><option value="0" data-dfge-val="60">≥ 60</option><option value="2" data-dfge-val="50">40-59</option><option value="4" data-dfge-val="30">20-39</option><option value="6" data-dfge-val="19">&lt; 20</option></select>
+                                            <button id="btn-goto-outils" class="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600" title="Aller au calculateur CKD-EPI"><i class="fa-solid fa-calculator"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                               <h3 class="font-semibold text-lg mb-3">Facteurs de Risque</h3>
+                                <div class="space-y-3">
+                                    <label class="flex items-center"><input type="checkbox" class="mehran-input h-4 w-4 mr-2" data-points="5">Hypotension</label>
+                                    <label class="flex items-center"><input type="checkbox" class="mehran-input h-4 w-4 mr-2" data-points="5">Ballonnet intra-aortique</label>
+                                    <label class="flex items-center"><input type="checkbox" class="mehran-input h-4 w-4 mr-2" data-points="5">Insuffisance cardiaque</label>
+                                    <label class="flex items-center"><input type="checkbox" class="mehran-input h-4 w-4 mr-2" data-points="4">Âge > 75 ans</label>
+                                    <label class="flex items-center"><input type="checkbox" class="mehran-input h-4 w-4 mr-2" data-points="3">Anémie</label>
+                                    <label class="flex items-center"><input type="checkbox" class="mehran-input h-4 w-4 mr-2" data-points="3">Diabète</label>
+                                    <hr><label class="flex items-center"><input type="checkbox" class="contemporary-input h-4 w-4 mr-2" data-alert="FEVG < 40%">FEVG &lt; 40%</label>
+                                    <label class="flex items-center"><input type="checkbox" class="contemporary-input h-4 w-4 mr-2" data-alert="Présentation clinique aigue (SCA)">Présentation clinique aigue (SCA)</label>
+                                    <label class="flex items-center"><input type="checkbox" id="urgent-procedure" class="h-4 w-4 mr-2">Procédure en Urgence</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 text-center">
+                            <button id="btn-calculate-pre-risk" class="bg-green-600 text-white font-bold px-6 py-3 rounded-lg shadow-lg hover:bg-green-700">Calculer le Risque Initial</button>
+                        </div>
+                         <div id="pre-risk-result" class="mt-6 text-center bg-blue-50 p-4 rounded-lg" style="display:none;"></div>
+                    </div>
+
+                    <div id="post-intervention-section" class="mt-10 pt-6 border-t" style="display: none;">
+                        <h2 class="step-title"><i class="fa-solid fa-stethoscope icon"></i>Étape 3: Réévaluation Péri-Intervention (Facteurs du Modèle 2)</h2>
+                        <div class="space-y-3 bg-slate-50 p-4 rounded-xl border">
+                            <p class="text-sm text-slate-600">Cochez les événements survenus PENDANT la procédure.</p>
+                            <label class="flex items-center"><input type="checkbox" class="post-input h-4 w-4 mr-2" data-alert="Saignements péri-procéduraux." data-risk-increase="5">Saignements péri-procéduraux</label>
+                            <label class="flex items-center"><input type="checkbox" class="post-input h-4 w-4 mr-2" data-alert="Flux lent ou absent (No-reflow) post-procédure." data-risk-increase="5">Flux lent / No-reflow</label>
+                            <label class="flex items-center"><input type="checkbox" class="post-input h-4 w-4 mr-2" data-alert="Anatomie coronaire complexe traitée." data-risk-increase="3">Anatomie PCI complexe</label>
+                        </div>
+                        <div class="mt-8 text-center">
+                            <button id="btn-generate-summary" class="bg-blue-600 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg hover:bg-blue-700">Générer la Fiche de Synthèse Finale</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="fiche" class="tab-content">
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                    <div id="summary-sheet-content"></div>
+                </div>
+            </div>
+
+            <div id="outils" class="tab-content">
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold text-blue-700 mb-6">Outils de Calcul Clinique</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-slate-50 p-6 rounded-xl border">
+                            <h3 class="font-bold text-lg text-slate-800 mb-3">Calculateur de DFGe (CKD-EPI 2021)</h3>
+                            <div class="space-y-4">
+                                <div><label for="creatinine-tool-ckd" class="block font-medium mb-1">Créatinine (mg/L)</label><input type="number" id="creatinine-tool-ckd" step="1" placeholder="12" class="ckd-input w-full p-2 border border-slate-300 rounded-md"></div>
+                                <div><label for="age-tool-ckd" class="block font-medium mb-1">Âge</label><input type="number" id="age-tool-ckd" placeholder="65" class="ckd-input w-full p-2 border border-slate-300 rounded-md"></div>
+                                <div><label for="sex-tool-ckd" class="block font-medium mb-1">Sexe</label><select id="sex-tool-ckd" class="ckd-input w-full p-2 border border-slate-300 rounded-md"><option value="female">Femme</option><option value="male">Homme</option></select></div>
+                            </div>
+                            <div id="ckd-result-container" class="mt-4 text-center bg-blue-100 p-4 rounded-lg" style="display:none;">
+                                <p class="text-slate-700">DFGe calculé (CKD-EPI 2021):</p>
+                                <p id="ckd-result" class="text-3xl font-bold text-blue-700"></p>
+                                <button id="btn-use-ckd" class="mt-2 text-sm bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600">Utiliser cette valeur dans le générateur</button>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-6 rounded-xl border">
+                            <h3 class="font-bold text-lg text-slate-800 mb-3">Dose Maximale de Contraste (MACD)</h3>
+                            <div class="space-y-4">
+                                <div><label for="poids-tool" class="block font-medium mb-1">Poids du patient (kg)</label><input type="number" id="poids-tool" placeholder="70" class="macd-input-tool w-full p-2 border border-slate-300 rounded-md"></div>
+                                <div><label for="creatinine-tool-macd" class="block font-medium mb-1">Créatinine (mg/L)</label><input type="number" id="creatinine-tool-macd" step="1" placeholder="12" class="macd-input-tool w-full p-2 border border-slate-300 rounded-md"></div>
+                            </div>
+                            <div id="macd-result-container" class="mt-6 text-center bg-blue-100 p-4 rounded-lg" style="display:none;"><p class="text-slate-700">Dose Maximale Acceptable:</p><p id="macd-result" class="text-3xl font-bold text-blue-700"></p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="protocoles" class="tab-content">
+                 <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold text-blue-700 mb-6">Algorithme des Protocoles</h2>
+                    <div class="space-y-8">
+                         <div id="proto-low" class="protocol-box p-5 rounded-xl border-l-4 border-green-500 bg-slate-50"><h3 class="font-bold text-lg text-green-700 mb-2">SI LE RISQUE EST FAIBLE :</h3><ul class="list-disc list-inside space-y-1 text-slate-700"><li><strong>Protocole : Hydratation Orale.</strong></li><li><strong>Déroulement :</strong> Encourager un apport hydrique abondant.</li></ul></div>
+                        <div id="proto-moderate" class="protocol-box">
+                            <h3 class="text-xl font-bold text-slate-800 mb-3"><i class="fa-solid fa-star mr-2 text-yellow-500"></i>Standard de Soin: Hydratation IV Isotonique</h3>
+                            <div class="bg-slate-50 p-5 rounded-xl border"><h4 class="font-semibold text-lg text-yellow-700 mb-2">NaCl 0.9%</h4><ul class="list-disc list-inside space-y-3 text-slate-700"><li><strong class="text-yellow-600">Pour Risque Modéré :</strong> Perfusion à **1 - 1.5 mL/kg/heure**, débutant 6 à 12 heures avant et se poursuivant 12 à 24 heures après.</li><li><strong class="text-orange-600">Pour Risque Élevé / Urgent :</strong> Perfusion à **3 mL/kg/heure** pendant 1 heure avant, puis poursuivre à **1 - 1.5 mL/kg/heure** pendant 4 à 6 heures après.</li></ul></div>
+                        </div>
+                        <div id="proto-high" class="protocol-box">
+                            <h3 class="text-xl font-bold text-slate-800 mb-3"><i class="fa-solid fa-cogs mr-2 text-blue-500"></i>Approches Guidées Avancées (Haut Risque & Services Expérimentés)</h3>
+                            <div class="space-y-4">
+                               <div class="border rounded-lg overflow-hidden shadow-sm"><div class="bg-blue-100 p-4"><h4 class="font-semibold text-blue-800"><i class="fa-solid fa-heart-pulse mr-3"></i>Guidage par LVEDP (POSEIDON)</h4></div><div class="p-4 text-sm space-y-3"><button id="btn-toggle-lvedp" class="text-blue-600 font-semibold hover:underline"><i class="fa-solid fa-plus-circle mr-2"></i>Plus de détails</button><div id="lvedp-details" class="details-toggle mt-3 border-t pt-3"><p><strong class="block">Principe:</strong> Ajuster le débit IV à la pression télédiastolique VG pour un remplissage optimal.</p><p><strong class="block mt-2">Déroulement Détaillé:</strong><ol class="list-decimal list-inside ml-4"><li>Mesurer la LVEDP (par E/e' non-invasif ou mesure invasive).</li><li>Administrer un bolus de 3mL/kg de NaCl 0.9% sur 1 heure.</li><li>Ajuster le débit de perfusion continue selon la LVEDP mesurée :<ul class="list-disc list-inside ml-6 mt-1"><li>LVEDP normale (E/e' &lt; 10): <strong>5 mL/kg/h</strong></li><li>LVEDP intermédiaire (E/e' 10-14): <strong>3 mL/kg/h</strong></li><li>LVEDP élevée (E/e' > 14): <strong>1.5 mL/kg/h</strong></li></ul></li></ol></p></div></div></div>
+                               <div class="border rounded-lg overflow-hidden shadow-sm"><div class="bg-gray-200 p-4"><h4 class="font-semibold text-gray-800"><i class="fa-solid fa-gears mr-3"></i>Guidage par Débit Urinaire (RenalGuard™)</h4></div><div class="p-4 text-sm space-y-3"><button id="btn-toggle-renalguard" class="text-gray-600 font-semibold hover:underline"><i class="fa-solid fa-plus-circle mr-2"></i>Plus de détails</button><div id="renalguard-details" class="details-toggle mt-3 border-t pt-3"><p><strong class="block">Principe:</strong> Induire une haute diurèse pour "laver" le contraste, avec compensation IV automatisée.</p><p><strong class="block mt-2">Déroulement Détaillé:</strong><ol class="list-decimal list-inside ml-4"><li>Bolus initial de 100-250mL de NaCl 0.9%.</li><li>Administration de Furosémide (ex: 0.25 mg/kg) pour atteindre un débit urinaire cible.</li><li>Objectif de diurèse : ≥ 450 ml/h en péri-procédure et ≥ 300 ml/h en post-procédure (jusqu'à 4h).</li><li>Des doses supplémentaires de furosémide peuvent être nécessaires si l'objectif n'est pas atteint.</li><li>Le système RenalGuard compense en temps réel le volume urinaire avec une perfusion de NaCl 0.9%.</li></ol></p></div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="references" class="tab-content">
+                 <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                    <h2 class="text-2xl font-bold text-blue-700 mb-6">Références Bibliographiques</h2>
+                    <ol id="references-list" class="list-decimal list-inside space-y-3 text-sm text-slate-700 break-words"></ol>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="text-center text-sm text-slate-500 mt-12 py-4 border-t">
+            Ibrahima SOW Interne en Néphrologie - Projet PC-AKI
+        </footer>
+    </div>
+
+    <!-- Main Application Script -->
+    <script src="script.js" defer></script>
+    
+    <!-- Service Worker Registration Script -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
